@@ -602,6 +602,11 @@ void EnBb_Blue(EnBb* this, PlayState* play) {
         if (this->targetActor == NULL) {
             explosive = EnBb_FindExplosive(play, this, 300.0f);
         } else if (this->targetActor->params == 0) {
+            // @bug this params check is supposed to detect when the bomb explodes (setting params to 1)
+            // so that `explosive` and then `this->targetActor` can be set to NULL.
+            // But if the explosive is a bombchu, then it will Actor_Kill while still having params set to 0.
+            // When this happens, the Bubble will keep following the bombchu after it's been deleted (reading stale memory).
+            // In OoT3D pulling out the hookshot afterwards will make the Bubble follow the hookshot.
             explosive = this->targetActor;
         } else {
             explosive = NULL;

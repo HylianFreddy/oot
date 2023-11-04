@@ -2213,10 +2213,10 @@ void func_808337D4(PlayState* play, Player* this) {
         Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, explosiveInfo->actorId, this->actor.world.pos.x,
                            this->actor.world.pos.y, this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0, 0);
     if (spawnedActor != NULL) {
-        if ((explosiveType != 0) && (play->bombchuBowlingStatus != 0)) {
-            play->bombchuBowlingStatus--;
-            if (play->bombchuBowlingStatus == 0) {
-                play->bombchuBowlingStatus = -1;
+        if ((explosiveType != 0) && (play->bombchuBowlingStatus_AndAmmo != 0)) {
+            play->bombchuBowlingStatus_AndAmmo--;
+            if (play->bombchuBowlingStatus_AndAmmo == 0) {
+                play->bombchuBowlingStatus_AndAmmo = -1;
             }
         } else {
             Inventory_ChangeAmmo(explosiveInfo->itemId, -1);
@@ -2349,8 +2349,8 @@ s32 Player_ItemIsItemAction(s32 item1, s32 itemAction) {
 s32 Player_GetItemOnButton(PlayState* play, s32 index) {
     if (index >= 4) {
         return ITEM_NONE;
-    } else if (play->bombchuBowlingStatus != 0) {
-        return (play->bombchuBowlingStatus > 0) ? ITEM_BOMBCHU : ITEM_NONE;
+    } else if (play->bombchuBowlingStatus_AndAmmo != 0) {
+        return (play->bombchuBowlingStatus_AndAmmo > 0) ? ITEM_BOMBCHU : ITEM_NONE;
     } else if (index == 0) {
         return B_BTN_ITEM;
     } else if (index == 1) {
@@ -3128,6 +3128,7 @@ s32 Player_SetupAction(PlayState* play, Player* this, PlayerActionFunc actionFun
     } else if (Player_Action_808507F4 == this->actionFunc) {
         func_80832340(play, this);
     }
+    // OoT3D: ISG crouch stab patch is here, as else if (Player_Action_80843188 == this->actionFunc)
 
     this->actionFunc = actionFunc;
 
@@ -3221,7 +3222,7 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
             ((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
              ((itemAction == PLAYER_IA_HOOKSHOT) || (itemAction == PLAYER_IA_LONGSHOT)))) {
 
-            if ((play->bombchuBowlingStatus == 0) &&
+            if ((play->bombchuBowlingStatus_AndAmmo == 0) &&
                 (((itemAction == PLAYER_IA_DEKU_STICK) && (AMMO(ITEM_DEKU_STICK) == 0)) ||
                  ((itemAction == PLAYER_IA_MAGIC_BEAN) && (AMMO(ITEM_MAGIC_BEAN) == 0)) ||
                  (temp = Player_ActionToExplosive(this, itemAction),
@@ -9956,7 +9957,7 @@ void Player_Init(Actor* thisx, PlayState* play2) {
     s32 respawnFlag;
     s32 respawnMode;
 
-    play->shootingGalleryStatus = play->bombchuBowlingStatus = 0;
+    play->shootingGalleryStatus = play->bombchuBowlingStatus_AndAmmo = 0;
 
     play->playerInit = Player_InitCommon;
     play->playerUpdate = Player_UpdateCommon;
@@ -11130,10 +11131,10 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
             Math_StepToF(&this->pushedSpeed, 0.0f, (this->stateFlags1 & PLAYER_STATE1_27) ? 0.5f : 1.0f);
         }
 
-        if (!Player_InBlockingCsMode(play, this) && !(this->stateFlags2 & PLAYER_STATE2_CRAWLING)) {
+        if (!Player_InBlockingCsMode(play, this) && !(this->stateFlags2 & PLAYER_STATE2_CRAWLING)) { // Blank A
             func_8083D53C(play, this);
 
-            if ((this->actor.category == ACTORCAT_PLAYER) && (gSaveContext.save.info.playerData.health == 0)) {
+            if ((this->actor.category == ACTORCAT_PLAYER) && (gSaveContext.save.info.playerData.health == 0)) { // health=0 -> DH
                 if (this->stateFlags1 & (PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_21)) {
                     func_80832440(play, this);
                     func_80837B9C(this, play);
@@ -11143,10 +11144,10 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
                                   : (this->shockTimer != 0) ? &gPlayerAnim_link_normal_electric_shock_end
                                                             : &gPlayerAnim_link_derth_rebirth);
                 }
-            } else {
+            } else { // parent NULL is what fails with Knockback Storage
                 if ((this->actor.parent == NULL) && ((play->transitionTrigger == TRANS_TRIGGER_START) ||
                                                      (this->unk_A87 != 0) || !func_808382DC(this, play))) {
-                    func_8083AA10(this, play);
+                    func_8083AA10(this, play); // In here the grotto transition starts, if the checks above fail -> DH
                 } else {
                     this->fallStartHeight = this->actor.world.pos.y;
                 }
@@ -12914,6 +12915,8 @@ s32 func_8084DFF4(PlayState* play, Player* this) {
                 gSaveContext.nextCutsceneIndex = 0xFFF1;
                 play->transitionType = TRANS_TYPE_SANDSTORM_END;
                 this->stateFlags1 &= ~PLAYER_STATE1_29;
+                // @bug this function call does nothing, because transitionTrigger
+                // has just been set and Player_InBlockingCsMode will be true
                 Player_TryCsAction(play, NULL, PLAYER_CSACTION_8);
             }
             this->getItemId = GI_NONE;

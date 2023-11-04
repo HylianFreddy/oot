@@ -641,6 +641,8 @@ void Play_Update(PlayState* this) {
                         } else if (this->transitionTrigger != TRANS_TRIGGER_END) {
                             this->state.running = false;
 
+                            // In OoT3D, here is the gamemode check to load Boss Challenge menu or MQ Unlock state
+
                             if (gSaveContext.gameMode != GAMEMODE_FILE_SELECT) {
                                 SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
                                 gSaveContext.save.entranceIndex = this->nextEntranceIndex;

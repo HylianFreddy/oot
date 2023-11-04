@@ -162,7 +162,7 @@ typedef struct {
 typedef struct {
     /* 0x0000 */ u8     freezeFlashTimer;
     /* 0x0001 */ char   unk_01[0x01];
-    /* 0x0002 */ u8     unk_02;
+    /* 0x0002 */ u8     unk_02; // hammer quake that damages enemies
     /* 0x0003 */ u8     lensActive;
     /* 0x0004 */ char   unk_04[0x04];
     /* 0x0008 */ u8     total; // total number of actors loaded
@@ -431,7 +431,7 @@ typedef struct PlayState {
     /* 0x11E1A */ s16 nextEntranceIndex;
     /* 0x11E1C */ char unk_11E1C[0x40];
     /* 0x11E5C */ s8 shootingGalleryStatus;
-    /* 0x11E5D */ s8 bombchuBowlingStatus; // "bombchu_game_flag"
+    /* 0x11E5D */ s8 bombchuBowlingStatus_AndAmmo; // "bombchu_game_flag"
     /* 0x11E5E */ u8 transitionType;
     /* 0x11E60 */ CollisionCheckContext colChkCtx;
     /* 0x120FC */ u16 cutsceneFlags[20];

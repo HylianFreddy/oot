@@ -421,6 +421,8 @@ void DemoKankyo_UpdateDoorOfTime(DemoKankyo* this, PlayState* play) {
 }
 
 void DemoKankyo_KillDoorOfTimeCollision(DemoKankyo* this, PlayState* play) {
+    // @bug the `child` pointer is never cleared and this function is called continuously on free memory.
+    // In OoT3D this will kill any newly spawned actor that loads where door_toki was (e.g. bombs with RI, hookshot with BA).
     Actor_Kill(this->actor.child);
 }
 
